@@ -78,6 +78,7 @@ SELECT * FROM Produto;
 CREATE TABLE IF NOT EXISTS Estoque (
     Id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     Produto_CodigoBarra INT NOT NULL,
+    Fornecedor_Id INT NOT NULL,
     Quantidade INT NOT NULL,
     ValorUnitario DOUBLE(8,2) NULL,
     LocalizacaoEstoque VARCHAR(45) NOT NULL,
@@ -129,7 +130,7 @@ CREATE TABLE IF NOT EXISTS ControleSaida (
 SELECT * FROM ControleSaida;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Procedure
 -- -----------------------------------------------------
 DELIMITER //
   CREATE PROCEDURE SP_AtualizaEstoque ( ES_Produto_CodigoBarra INT, ES_Quantidade INT, ES_ValorUnitario decimal(8,2))
@@ -148,10 +149,10 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Trigger Entrada Produto After Insert
 -- -----------------------------------------------------
 DELIMITER //
-CREATE TRIGGER TRG_EntradaProduto_AI AFTER INSERT ON entrada_produto
+CREATE TRIGGER TRG_EntradaProduto_AI AFTER INSERT ON ControleEntrada
 FOR EACH ROW
 BEGIN
       CALL SP_AtualizaEstoque (new.Produto_CodigoBarra, new.Quantidade, new.ValorUnitario);
@@ -159,10 +160,10 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Trigger Entrada Produto After Update
 -- -----------------------------------------------------
 DELIMITER //
-CREATE TRIGGER TRG_EntradaProduto_AU AFTER UPDATE ON entrada_produto
+CREATE TRIGGER TRG_EntradaProduto_AU AFTER UPDATE ON ControleEntrada
 FOR EACH ROW
 BEGIN
       CALL SP_AtualizaEstoque (new.Produto_CodigoBarra, new.Quantidade - old.Quantidade, new.ValorUnitario);
@@ -170,10 +171,10 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Trigger Entrada Produto After Delete
 -- -----------------------------------------------------
 DELIMITER //
-CREATE TRIGGER TRG_EntradaProduto_AD AFTER DELETE ON entrada_produto
+CREATE TRIGGER TRG_EntradaProduto_AD AFTER DELETE ON ControleEntrada
 FOR EACH ROW
 BEGIN
       CALL SP_AtualizaEstoque (old.Produto_CodigoBarra, old.Quantidade * -1, old.ValorUnitario);
@@ -181,10 +182,10 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Trigger Saída Produto After Insert
 -- -----------------------------------------------------
 DELIMITER //
-CREATE TRIGGER TRG_SaidaProduto_AI AFTER INSERT ON saida_produto
+CREATE TRIGGER TRG_SaidaProduto_AI AFTER INSERT ON ControleSaida
 FOR EACH ROW
 BEGIN
       CALL SP_AtualizaEstoque (new.Produto_CodigoBarra, new.Quantidade * -1, new.ValorUnitario);
@@ -192,10 +193,10 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Trigger Saída Produto After Update
 -- -----------------------------------------------------
 DELIMITER //
-CREATE TRIGGER TRG_SaidaProduto_AU AFTER UPDATE ON saida_produto
+CREATE TRIGGER TRG_SaidaProduto_AU AFTER UPDATE ON ControleSaida
 FOR EACH ROW
 BEGIN
       CALL SP_AtualizaEstoque (new.Produto_CodigoBarra, old.Quantidade - new.Quantidade, new.ValorUnitario);
@@ -203,10 +204,10 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------------
--- Table ControleSaida
+-- Table Trigger Saída Produto After Delete
 -- -----------------------------------------------------
 DELIMITER //
-CREATE TRIGGER TRG_SaidaProduto_AD AFTER DELETE ON saida_produto
+CREATE TRIGGER TRG_SaidaProduto_AD AFTER DELETE ON ControleSaida
 FOR EACH ROW
 BEGIN
       CALL SP_AtualizaEstoque (old.Produto_CodigoBarra, old.Quantidade, old.ValorUnitario);
